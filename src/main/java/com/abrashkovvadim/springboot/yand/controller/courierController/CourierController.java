@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.lang.reflect.Method;
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,8 +36,11 @@ public class CourierController implements AppControllerWithRateLimit {
     public CourierController() {
         Bandwidth limit = Bandwidth.classic(10, Refill.greedy(10, Duration.ofSeconds(1)));
         for(Method method: CourierController.class.getMethods()){
-            bucketsForEndpoints.put(method.getName(), Bucket.builder().addLimit(limit).build());
+            String name = method.getName();
+            if(!Arrays.stream(Object.class.getMethods()).toList().contains(method) && !name.equals("getBucket"))
+                bucketsForEndpoints.put(name, Bucket.builder().addLimit(limit).build());
         }
+        System.out.println(bucketsForEndpoints.keySet());
     }
 
     @PostMapping("")
