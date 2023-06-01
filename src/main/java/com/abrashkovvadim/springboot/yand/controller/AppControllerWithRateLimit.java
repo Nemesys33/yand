@@ -4,5 +4,5 @@ import io.github.bucket4j.Bucket;
 
 public interface AppControllerWithRateLimit {
 
-    public Bucket getBucket();
+    Bucket getBucket(String method);
 }

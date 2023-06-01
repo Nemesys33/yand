@@ -13,8 +13,11 @@ import io.github.bucket4j.Refill;
 import jakarta.annotation.Resource;
 import org.springframework.web.bind.annotation.*;
 
+import java.lang.reflect.Method;
 import java.time.Duration;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/couriers")
@@ -22,15 +25,18 @@ public class CourierController implements AppControllerWithRateLimit {
 
     @Resource
     private CourierService courierService;
-    private final Bucket bucket;
 
-    public Bucket getBucket() {
-        return bucket;
+    private final Map<String, Bucket> bucketsForEndpoints = new HashMap<>();
+
+    public Bucket getBucket(String method) {
+        return bucketsForEndpoints.get(method);
     }
 
     public CourierController() {
         Bandwidth limit = Bandwidth.classic(10, Refill.greedy(10, Duration.ofSeconds(1)));
-        this.bucket = Bucket.builder().addLimit(limit).build();
+        for(Method method: CourierController.class.getMethods()){
+            bucketsForEndpoints.put(method.getName(), Bucket.builder().addLimit(limit).build());
+        }
     }
 
     @PostMapping("")

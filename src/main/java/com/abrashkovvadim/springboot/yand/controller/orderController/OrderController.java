@@ -14,9 +14,12 @@ import io.github.bucket4j.Refill;
 import jakarta.annotation.Resource;
 import org.springframework.web.bind.annotation.*;
 
+import java.lang.reflect.Method;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 @RestController
@@ -26,15 +29,18 @@ public class OrderController implements AppControllerWithRateLimit {
     @Resource
     private OrderService orderService;
 
-    private final Bucket bucket;
+    private final Map<String, Bucket> bucketsForEndpoints = new HashMap<>();
 
-    public Bucket getBucket() {
-        return bucket;
+
+    public Bucket getBucket(String method) {
+        return bucketsForEndpoints.get(method);
     }
 
     public OrderController() {
         Bandwidth limit = Bandwidth.classic(10, Refill.greedy(10, Duration.ofSeconds(1)));
-        this.bucket = Bucket.builder().addLimit(limit).build();
+        for(Method method: OrderController.class.getMethods()) {
+            bucketsForEndpoints.put(method.getName(), Bucket.builder().addLimit(limit).build());
+        }
     }
 
     @PostMapping("")
