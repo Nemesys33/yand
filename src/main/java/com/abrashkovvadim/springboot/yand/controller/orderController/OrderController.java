@@ -40,7 +40,6 @@ public class OrderController implements AppControllerWithRateLimit {
             if(!Arrays.stream(Object.class.getMethods()).toList().contains(method) && !name.equals("getBucket"))
                 bucketsForEndpoints.put(name, Bucket.builder().addLimit(limit).build());
         }
-        System.out.println(bucketsForEndpoints.keySet());
     }
 
     @PostMapping("")
